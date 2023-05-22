@@ -39,6 +39,8 @@ export default function ToolsControl({ children }) {
         case "text":
             tool = <TextToolsHandle>{children}</TextToolsHandle>
             break
+        case "media":
+            tool = <>{children}</>
         default:
             tool = null
     }

@@ -1,7 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { AppContext } from "../../../context/webscrumber.context"
-import Element from "../element/graphic"
+import Graphic from "../element/graphic"
+import Media from "../control/media"
 
 const Canvas = () => {
     const ref = useRef()
@@ -19,11 +20,19 @@ const Canvas = () => {
         }
     }, [context.layer])
 
+    const RenderElement = ({ name }) => {
+        if (context.layer[name]) {
+            if (context.layer[name].type === "graphic") {
+            }
+        }
+    }
+
     return (
         <StyledCanvas onMouseDown={(e) => e.preventDefault()} ref={ref}>
             {elements.map((name) => {
-                return <Element key={name} name={name} />
+                return <RenderElement key={name} name={name} />
             })}
+            {context.tool === "media" && <Media />}
         </StyledCanvas>
     )
 }

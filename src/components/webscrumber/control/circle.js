@@ -3,54 +3,58 @@ import { useContext, useRef, useState, useEffect } from "react"
 
 export default function CircleToolsHandle({ children }) {
     const { context, setContext } = useContext(AppContext)
-    const [left, setLeft] = useState(null)
-    const [top, setTop] = useState(null)
-    const [width, setWidth] = useState(null)
-    const [height, setHeight] = useState(null)
-    const [status, setStatus] = useState("")
+    const initialState = (value) =>
+        context?.layer?.[`graphic${context?.index?.graphic}`]
+            ? context?.layer?.[`graphic${context?.index?.graphic}`]?.[value]
+            : null
+    const [left, setLeft] = useState(initialState("left"))
+    const [top, setTop] = useState(initialState("top"))
+    const [width, setWidth] = useState(initialState("width"))
+    const [height, setHeight] = useState(initialState("height"))
+    const [isDrawing, setIsDrawing] = useState(null)
     const mousePoint = useRef({})
 
     useEffect(() => {
-        const elementContext = {
-            position: "absolute",
-            left,
-            top,
-            width,
-            height,
-            backgroundColor: "#e33",
-            borderRadius: "50%",
-            zIndex: context.elementIndex,
-            type: "element",
-        }
+        if (context.tool === "circle" && isDrawing !== null) {
+            const graphicContext = {
+                position: "absolute",
+                left,
+                top,
+                width,
+                height,
+                backgroundColor: "#e33",
+                zIndex: context.index.graphic + context.index.text,
+                status: { isDrawing },
+                type: "graphic",
+            }
 
-        if (status === "holding" || status === "moving") {
             setContext((prev) => ({
                 ...prev,
                 layer: {
                     ...prev.layer,
-                    [`element${context.elementIndex}`]: elementContext,
-                },
-            }))
-        } else if (status === "release") {
-            setContext((prev) => ({
-                ...prev,
-                layer: {
-                    ...prev.layer,
-                    [`element${context.elementIndex}`]: elementContext,
+                    [`graphic${context.index.graphic}`]: {
+                        ...graphicContext,
+                        borderRadius: "50%",
+                    },
                 },
             }))
         }
-        // eslint-disable-next-line
-    }, [width, height, context.elementIndex])
+    }, [width, height, left, top, isDrawing, setContext, context])
 
     useEffect(() => {
         const circle = (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
-            setContext((prev) => ({
-                ...prev,
-                elementIndex: prev.elementIndex + 1,
-            }))
+            setIsDrawing(true)
+            setContext((prev) => {
+                return {
+                    ...prev,
+                    index: {
+                        ...prev.index,
+                        graphic: prev.index.graphic + 1,
+                    },
+                }
+            })
 
             const mousemove = (e) => {
                 e.stopImmediatePropagation()
@@ -91,13 +95,14 @@ export default function CircleToolsHandle({ children }) {
                     if (dy > 0) {
                         setHeight(`${dy}px`)
                     } else {
-                        setHeight(`${dy}px`)
+                        setHeight(`${-dy}px`)
                         setTop(`${dy + mousePoint.current.y}px`)
                     }
                 }
 
-                const mouseup = () => {
-                    setStatus("release")
+                const mouseup = (e) => {
+                    e.stopPropagation()
+                    setIsDrawing(false)
                     window.removeEventListener("mousemove", mousemove)
                     window.removeEventListener("mouseup", mouseup)
                     window.removeEventListener("keydown", keydown)
@@ -105,27 +110,30 @@ export default function CircleToolsHandle({ children }) {
 
                 const keydown = (e) => {
                     if (e.key === "Escape") {
-                        // Do whatever you want when ESC is pressed, e.g., stop drawing
-                        setContext((prev) => ({
-                            ...prev,
-                            elementIndex: prev.elementIndex - 1,
-                        }))
+                        setContext((prev) => {
+                            return {
+                                ...prev,
+                                index: {
+                                    ...prev.index,
+                                    graphic: prev.index.graphic - 1,
+                                },
+                            }
+                        })
                         window.removeEventListener("mousemove", mousemove)
                         window.removeEventListener("mouseup", mouseup)
                         window.removeEventListener("keydown", keydown)
-                        // If you have more cleanup to do when ESC is pressed, put it here
                     }
                 }
 
-                setStatus("moving")
                 window.addEventListener("mouseup", mouseup)
                 window.addEventListener("keydown", keydown)
             }
 
-            setStatus("holding")
             mousePoint.current = { x: e.clientX, y: e.clientY }
             setLeft(`${mousePoint.current.x}px`)
             setTop(`${mousePoint.current.y}px`)
+            setWidth(0)
+            setHeight(0)
             window.addEventListener("mousemove", mousemove)
         }
 
@@ -141,6 +149,6 @@ export default function CircleToolsHandle({ children }) {
         return () => {
             context.canvas.removeEventListener("mousedown", circle)
         }
-    }, [context.tool, context.canvas, setContext])
+    }, [context.tool, context.canvas, context.index, setContext])
     return <>{children}</>
 }

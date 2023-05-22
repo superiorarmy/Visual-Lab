@@ -18,7 +18,6 @@ export default function Selector({ name, graphicRef }) {
     // Mover
     const { context, setContext } = useContext(AppContext)
     const [isClickPoint, setIsClickPoint] = useState(false)
-    const [isMoving, setIsMoving] = useState(false)
     const initialPosition = useRef(null)
     const graphic = context?.layer?.[name]
     const setGraphic = useCallback(
@@ -33,37 +32,55 @@ export default function Selector({ name, graphicRef }) {
         },
         [name, setContext]
     )
+
     useEffect(() => {
+        const setIsMoving = (bool) =>
+            setContext((prev) => ({
+                ...prev,
+                layer: {
+                    ...prev.layer,
+                    [name]: {
+                        ...prev.layer[name],
+                        status: {
+                            isDrawing: false,
+                            isResizing: false,
+                            isMoving: bool,
+                        },
+                    },
+                },
+            }))
+
         const mousedown = (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
 
-            initialPosition.current = { x: graphic?.left, y: graphic?.top }
-
-            const mousePoint = {
-                x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
-                y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
-            }
-
-            const mousemove = (e) => {
-                setIsMoving(true)
-                const dx = e.clientX - mousePoint.x
-                const dy = e.clientY - mousePoint.y
-                setGraphic({ left: `${dx}px`, top: `${dy}px` })
-            }
-
-            const mouseup = () => {
-                setIsMoving(false)
-                window.removeEventListener("mousemove", mousemove)
-                window.removeEventListener("mouseup", mouseup)
-            }
-
             if (!isClickPoint) {
+                setIsMoving(true)
+                initialPosition.current = { x: graphic?.left, y: graphic?.top }
+
+                const mousePoint = {
+                    x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
+                    y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
+                }
+
+                const mousemove = (e) => {
+                    const dx = e.clientX - mousePoint.x
+                    const dy = e.clientY - mousePoint.y
+                    setGraphic({ left: `${dx}px`, top: `${dy}px` })
+                }
+
+                const mouseup = () => {
+                    setIsMoving(false)
+                    window.removeEventListener("mousemove", mousemove)
+                    window.removeEventListener("mouseup", mouseup)
+                }
+
                 window.addEventListener("mousemove", mousemove)
                 window.addEventListener("mouseup", mouseup)
-            } else {
-                window.removeEventListener("mousemove", mousemove)
-                window.removeEventListener("mouseup", mouseup)
+                return () => {
+                    window.removeEventListener("mousemove", mousemove)
+                    window.removeEventListener("mouseup", mouseup)
+                }
             }
         }
 
@@ -78,7 +95,15 @@ export default function Selector({ name, graphicRef }) {
                 window.removeEventListener("mouseup", mousedown)
             }
         }
-    }, [graphic, graphicRef, setGraphic, isClickPoint, context.tool])
+    }, [
+        graphic,
+        graphicRef,
+        setGraphic,
+        isClickPoint,
+        context.tool,
+        name,
+        setContext,
+    ])
 
     // Shortkey
     useEffect(() => {
@@ -116,7 +141,7 @@ export default function Selector({ name, graphicRef }) {
             }
         }
 
-        if (isMoving) {
+        if (context.layer[name].status.isMoving) {
             window.addEventListener("keydown", onMovingKeyDown)
         } else {
             window.addEventListener("keydown", onKeyDown)
@@ -127,7 +152,7 @@ export default function Selector({ name, graphicRef }) {
             window.removeEventListener("keydown", onMovingKeyDown)
             window.removeEventListener("keydown", onKeyDown)
         }
-    }, [graphic, isMoving, context.layer, setGraphic, name, setContext])
+    }, [graphic, context, setGraphic, name, setContext])
 
     return (
         <Outline>

@@ -25,8 +25,24 @@ const Point = ({ name, point, setIsClickPoint, ...props }) => {
     useEffect(() => {
         const reference = ref.current
         const graphic = context.layer[name]
+        const setIsResizing = (bool) =>
+            setContext((prev) => ({
+                ...prev,
+                layer: {
+                    ...prev.layer,
+                    [name]: {
+                        ...prev.layer[name],
+                        status: {
+                            isDrawing: false,
+                            isResizing: bool,
+                            isMoving: false,
+                        },
+                    },
+                },
+            }))
         const mousedown = (e) => {
             setIsClickPoint(true)
+            setIsResizing(true)
             mousePoint.current = { x: e.clientX, y: e.clientY }
             const pointName = e.target.getAttribute("direction")
 
@@ -133,6 +149,7 @@ const Point = ({ name, point, setIsClickPoint, ...props }) => {
             }
             const mouseup = () => {
                 setIsClickPoint(false)
+                setIsResizing(false)
                 window.removeEventListener("mousemove", mousemove)
                 window.removeEventListener("mouseup", mouseup)
             }
@@ -148,7 +165,7 @@ const Point = ({ name, point, setIsClickPoint, ...props }) => {
         }
 
         return () => reference.removeEventListener("mousedown", mousedown)
-    }, [context.layer, name, setGraphic, setIsClickPoint])
+    }, [context.layer, name, setGraphic, setIsClickPoint, setContext])
     return <StyledPoint {...props} ref={ref} direction={point} point={point} />
 }
 

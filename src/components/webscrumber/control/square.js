@@ -3,37 +3,55 @@ import { useContext, useRef, useState, useEffect } from "react"
 
 export default function SquareToolsHandle({ children }) {
     const { context, setContext } = useContext(AppContext)
-    const [left, setLeft] = useState(null)
-    const [top, setTop] = useState(null)
-    const [width, setWidth] = useState(null)
-    const [height, setHeight] = useState(null)
+    const initialState = (value) =>
+        context?.layer?.[`graphic${context?.index?.graphic}`]
+            ? context?.layer?.[`graphic${context?.index?.graphic}`]?.[value]
+            : null
+    const [left, setLeft] = useState(initialState("left"))
+    const [top, setTop] = useState(initialState("top"))
+    const [width, setWidth] = useState(initialState("width"))
+    const [height, setHeight] = useState(initialState("height"))
+    const [isDrawing, setIsDrawing] = useState(null)
     const mousePoint = useRef({})
 
     useEffect(() => {
-        const graphicContext = {
-            position: "absolute",
-            left,
-            top,
-            width,
-            height,
-            backgroundColor: "#e33",
-            zIndex: context.index.graphic + context.index.text,
-            type: "graphic",
-        }
+        if (context.tool === "square" && isDrawing !== null) {
+            const graphicContext = {
+                position: "absolute",
+                left,
+                top,
+                width,
+                height,
+                backgroundColor: "#e33",
+                zIndex: context.index.graphic + context.index.text,
+                status: { isDrawing },
+                type: "graphic",
+            }
 
-        setContext((prev) => ({
-            ...prev,
-            layer: {
-                ...prev.layer,
-                [`graphic${context.index.graphic}`]: graphicContext,
-            },
-        }))
-    }, [width, height, left, top, setContext, context.index])
+            setContext((prev) => ({
+                ...prev,
+                layer: {
+                    ...prev.layer,
+                    [`graphic${context.index.graphic}`]: graphicContext,
+                },
+            }))
+        }
+    }, [
+        width,
+        height,
+        left,
+        top,
+        isDrawing,
+        setContext,
+        context.tool,
+        context.index,
+    ])
 
     useEffect(() => {
         const square = (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
+            setIsDrawing(true)
             setContext((prev) => {
                 return {
                     ...prev,
@@ -88,15 +106,15 @@ export default function SquareToolsHandle({ children }) {
                     }
                 }
 
-                const mouseup = () => {
-                    mousePoint.current = {}
+                const mouseup = (e) => {
+                    e.stopPropagation()
+                    setIsDrawing(false)
                     window.removeEventListener("mousemove", mousemove)
                     window.removeEventListener("mouseup", mouseup)
                     window.removeEventListener("keydown", keydown)
                 }
 
                 const keydown = (e) => {
-                    setStatus("release")
                     if (e.key === "Escape") {
                         setContext((prev) => {
                             return {
@@ -120,6 +138,8 @@ export default function SquareToolsHandle({ children }) {
             mousePoint.current = { x: e.clientX, y: e.clientY }
             setLeft(`${mousePoint.current.x}px`)
             setTop(`${mousePoint.current.y}px`)
+            setWidth(0)
+            setHeight(0)
             window.addEventListener("mousemove", mousemove)
         }
 

@@ -54,6 +54,30 @@ export default function Graphic({ name }) {
         }
     }, [graphic, name, ref, setGraphic])
 
+    const condition = () => {
+        const element = context.layer[name]
+        const status = element.status
+        const parseElement = (value) => {
+            const elementValue = element?.[value]
+            if (typeof elementValue === "string") {
+                return parseInt(elementValue.split("px")[0])
+            }
+            // Return some default value here, or handle the error in some other way
+            return null
+        }
+        if (status?.isDrawing || status?.isResizing) {
+            return (
+                <>
+                    {parseElement("width") >= 50 && (
+                        <MeasureLine width={graphic?.width} />
+                    )}
+                    {parseElement("height") >= 50 && (
+                        <MeasureLine height={graphic?.height} />
+                    )}
+                </>
+            )
+        }
+    }
     return (
         <>
             <div
@@ -63,8 +87,7 @@ export default function Graphic({ name }) {
                 onClick={onClick}
                 className={`graphic ${name}`}
             >
-                <MeasureLine width={graphic?.width} />
-                <MeasureLine height={graphic?.height} />
+                {condition()}
                 {context?.layer?.[name]?.isActive && (
                     <Selector name={name} graphicRef={ref.current} />
                 )}
@@ -73,100 +96,81 @@ export default function Graphic({ name }) {
     )
 }
 
-const Line = styled.div`
+const Line = styled.div.attrs(({ direction, width, height }) => ({
+    style: {
+        flexDirection: direction === "vertical" ? "row" : "column",
+        ...(direction === "vertical"
+            ? {
+                  width: width,
+                  height: "12px",
+                  top: "10px",
+                  left: "0",
+              }
+            : {
+                  width: "12px",
+                  height: height,
+                  top: "50%",
+                  left: "10px",
+                  transform: "translateY(-50%)",
+              }),
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+}))`
     position: absolute;
-    
-    ${({ direction }) =>
-        direction === "vertical" &&
-        `
-            width: 100%;
-            height: 12px;
-            top: -20px;
-            left: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-direction: row;
-    `}
-    ${({ direction }) =>
-        direction === "horizontal" &&
-        `
-            width: 12px;
-            height: 100%;
-            top: 50%;
-            right: -20px;
-            transform: translateY(-50%);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-direction: column;
-        `}
 
     .v-line {
-        ${({ width }) =>
-            width && `width: ${parseInt(width.split("px")[0]) / 2 - 10}px`};
-            height: 1px;
-            background-color: white;
-
-        .left-endpoint {
-            width: 1px;
-            height: 100%;
-            position: absolute;
-            left: 0;
-            top: 50%;
-            background-color: white;
-            transform: translateY(-50%);
-        }
-        .right-endpoint {
-            width: 1px;
-            height: 100%;
-            position: absolute;
-            right: 0;
-            top: 50%;
-            background-color: white;
-            transform: translateY(-50%);
-        }
+        height: 1px;
+        background-color: white;
     }
-    
+
     .h-line {
-        ${({ height }) =>
-            height && `height: ${parseInt(height.split("px")[0]) / 2 - 30}px`};
         width: 1px;
         background-color: white;
-
-        .top-endpoint {
-            width: 100%;
-            height: 1px;
-            position: absolute;
-            left: 50%;
-            top: 0;
-            background-color: white;
-            transform: translateX(-50%);
-        }
-        .bottom-endpoint {
-            width: 100%;
-            height: 1px;
-            position: absolute;
-            left: 50%;
-            bottom: 0;
-            background-color: white;
-            transform: translateX(-50%);
-        }
     }
 
     .length {
         color: white;
+    }
 
-        ${({ direction }) =>
-            direction === "horizontal" &&
-            `
-            margin: 10px 0;
-            transform: rotate(90deg);`}
+    .left-endpoint {
+        width: 1px;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 50%;
+        background-color: white;
+        transform: translateY(-50%);
+    }
+    .right-endpoint {
+        width: 1px;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        background-color: white;
+        transform: translateY(-50%);
+    }
 
-        ${({ direction }) =>
-            direction === "vertical" &&
-            `
-            margin: 0 10px;`}
+    .top-endpoint {
+        width: 100%;
+        height: 1px;
+        position: absolute;
+        left: 50%;
+        top: 0;
+        background-color: white;
+        transform: translateX(-50%);
+    }
+    .bottom-endpoint {
+        width: 100%;
+        height: 1px;
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        background-color: white;
+        transform: translateX(-50%);
+    }
 `
 
 const MeasureLine = ({ width, height }) => {
@@ -174,22 +178,55 @@ const MeasureLine = ({ width, height }) => {
         <>
             {width && (
                 <Line direction={"vertical"} width={width}>
-                    <div className='v-line'>
+                    <div
+                        className='v-line'
+                        style={{
+                            width: `${
+                                parseInt(width.split("px")[0]) / 2 - 30
+                            }px`,
+                        }}
+                    >
                         <div className='left-endpoint' />
                     </div>
                     <span className='length'>{width}</span>
-                    <div className='v-line'>
+                    <div
+                        className='v-line'
+                        style={{
+                            width: `${
+                                parseInt(width.split("px")[0]) / 2 - 30
+                            }px`,
+                        }}
+                    >
                         <div className='right-endpoint' />
                     </div>
                 </Line>
             )}
             {height && (
                 <Line direction={"horizontal"} height={height}>
-                    <div className='h-line'>
+                    <div
+                        className='h-line'
+                        style={{
+                            height: `${
+                                parseInt(height.split("px")[0]) / 2 - 30
+                            }px`,
+                        }}
+                    >
                         <div className='top-endpoint' />
                     </div>
-                    <span className='length'>{height}</span>
-                    <div className='h-line'>
+                    <span
+                        className='length'
+                        style={{ transform: "rotate(90deg)" }}
+                    >
+                        {height}
+                    </span>
+                    <div
+                        className='h-line'
+                        style={{
+                            height: `${
+                                parseInt(height.split("px")[0]) / 2 - 30
+                            }px`,
+                        }}
+                    >
                         <div className='bottom-endpoint' />
                     </div>
                 </Line>
