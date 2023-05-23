@@ -1,7 +1,7 @@
 import styled from "styled-components"
 
-export default function Media() {
-    return <MediaMenu>Media</MediaMenu>
+export default function MediaToolsHandle({ children }) {
+    return <>{children}</>
 }
 
 const MediaMenu = styled.div`

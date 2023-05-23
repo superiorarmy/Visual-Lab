@@ -4,6 +4,7 @@ import SquareToolsHandle from "./square"
 import PointerToolsHandle from "./pointer"
 import CircleToolsHandle from "./circle"
 import TextToolsHandle from "./text"
+import MediaToolsHandle from "./media"
 
 export default function ToolsControl({ children }) {
     const { context, setContext } = useContext(AppContext)
@@ -40,7 +41,7 @@ export default function ToolsControl({ children }) {
             tool = <TextToolsHandle>{children}</TextToolsHandle>
             break
         case "media":
-            tool = <>{children}</>
+            tool = <MediaToolsHandle>{children}</MediaToolsHandle>
         default:
             tool = null
     }

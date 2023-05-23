@@ -2,7 +2,6 @@ import { useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { AppContext } from "../../../context/webscrumber.context"
 import Graphic from "../element/graphic"
-import Media from "../control/media"
 
 const Canvas = () => {
     const ref = useRef()
@@ -32,7 +31,6 @@ const Canvas = () => {
             {elements.map((name) => {
                 return <RenderElement key={name} name={name} />
             })}
-            {context.tool === "media" && <Media />}
         </StyledCanvas>
     )
 }
