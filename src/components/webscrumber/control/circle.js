@@ -137,18 +137,18 @@ export default function CircleToolsHandle({ children }) {
             window.addEventListener("mousemove", mousemove)
         }
 
-        if (context.canvas) {
+        if (context.ref.canvas) {
             if (context.tool === "circle") {
                 document.body.style.cursor = "crosshair"
-                context.canvas.addEventListener("mousedown", circle)
+                context.ref.canvas.addEventListener("mousedown", circle)
             } else {
                 document.body.removeAttribute("style")
-                context.canvas.removeEventListener("mousedown", circle)
+                context.ref.canvas.removeEventListener("mousedown", circle)
             }
         }
         return () => {
-            context.canvas.removeEventListener("mousedown", circle)
+            context.ref.canvas.removeEventListener("mousedown", circle)
         }
-    }, [context.tool, context.canvas, context.index, setContext])
+    }, [context.tool, context.ref.canvas, context.index, setContext])
     return <>{children}</>
 }

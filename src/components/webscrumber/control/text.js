@@ -4,7 +4,7 @@ import { useContext, useEffect } from "react"
 export default function TextToolsHandle({ children }) {
     const { context, setContext } = useContext(AppContext)
     useEffect(() => {
-        if (context.canvas) {
+        if (context.ref.canvas) {
             const click = (e) => {
                 setContext((prev) => ({
                     ...prev,
@@ -32,12 +32,18 @@ export default function TextToolsHandle({ children }) {
 
             if (context.tool === "text") {
                 document.body.style.cursor = "text"
-                context.canvas.addEventListener("click", click)
+                context.ref.canvas.addEventListener("click", click)
             } else {
                 document.body.removeAttribute("style")
-                context.canvas.removeEventListener("click", click)
+                context.ref.canvas.removeEventListener("click", click)
             }
         }
-    }, [context.tool, context.canvas, context.elementIndex, setContext])
+    }, [
+        context.tool,
+        context.ref.canvas,
+        context.elementIndex,
+        context.index,
+        setContext,
+    ])
     return <>{children}</>
 }

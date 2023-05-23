@@ -1,8 +1,6 @@
 import { AppContext } from "../../../../context/webscrumber.context"
 import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
-import css from "styled-jsx/css"
-import Point from "./points"
 import Selector from "./selector"
 
 export default function Graphic({ name }) {
@@ -29,23 +27,28 @@ export default function Graphic({ name }) {
         ) {
             setGraphic({ isActive: true })
         }
+    }
 
-        if (context.canvas) {
+    useEffect(() => {
+        if (graphic.isActive) {
             const click = (e) => {
                 if (ref && ref.current && !ref.current.contains(e.target)) {
                     setGraphic({ isActive: false })
                 }
             }
 
-            if (context.tool === "pointer") {
-                context.canvas.addEventListener("click", click, { once: true })
-            } else {
-                context.canvas.removeEventListener("click", click, {
-                    once: true,
-                })
+            if (context.tool === "pointer" && context.ref.canvas) {
+                context.ref.canvas.addEventListener("click", click)
+            }
+
+            // Cleanup on unmount or when dependencies change
+            return () => {
+                if (context.ref.canvas) {
+                    context.ref.canvas.removeEventListener("click", click)
+                }
             }
         }
-    }
+    }, [graphic, context.tool, context.ref.canvas, ref, setGraphic])
 
     // Add ref
     useEffect(() => {
@@ -55,8 +58,8 @@ export default function Graphic({ name }) {
     }, [graphic, name, ref, setGraphic])
 
     const condition = () => {
-        const element = context.layer[name]
-        const status = element.status
+        const element = context?.layer?.[name]
+        const status = element?.status
         const parseElement = (value) => {
             const elementValue = element?.[value]
             if (typeof elementValue === "string") {
@@ -65,7 +68,7 @@ export default function Graphic({ name }) {
             // Return some default value here, or handle the error in some other way
             return null
         }
-        if (status?.isDrawing || status?.isResizing) {
+        if (status && (status.isDrawing || status.isResizing)) {
             return (
                 <>
                     {parseElement("width") >= 50 && (
@@ -89,7 +92,7 @@ export default function Graphic({ name }) {
             >
                 {condition()}
                 {context?.layer?.[name]?.isActive && (
-                    <Selector name={name} graphicRef={ref.current} />
+                    <Selector name={name} ref={ref} />
                 )}
             </div>
         </>

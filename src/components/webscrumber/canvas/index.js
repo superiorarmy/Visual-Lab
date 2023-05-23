@@ -8,9 +8,15 @@ const Canvas = () => {
     const { context, setContext } = useContext(AppContext)
     useEffect(() => {
         setContext((prev) => {
-            return { ...prev, canvas: ref.current }
+            return {
+                ...prev,
+                ref: {
+                    ...prev.ref,
+                    canvas: ref.current,
+                },
+            }
         })
-    }, [ref, setContext])
+    }, [setContext])
     const [elements, setElements] = useState([])
     useEffect(() => {
         if (context.layer) {
@@ -19,9 +25,10 @@ const Canvas = () => {
         }
     }, [context.layer])
 
-    const RenderElement = ({ name }) => {
+    const RenderElement = ({ name, ...props }) => {
         if (context.layer[name]) {
             if (context.layer[name].type === "graphic") {
+                return <Graphic name={name} {...props} />
             }
         }
     }

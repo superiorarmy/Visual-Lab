@@ -143,18 +143,18 @@ export default function SquareToolsHandle({ children }) {
             window.addEventListener("mousemove", mousemove)
         }
 
-        if (context.canvas) {
+        if (context.ref.canvas) {
             if (context.tool === "square") {
                 document.body.style.cursor = "crosshair"
-                context.canvas.addEventListener("mousedown", square)
+                context.ref.canvas.addEventListener("mousedown", square)
             } else {
                 document.body.removeAttribute("style")
-                context.canvas.removeEventListener("mousedown", square)
+                context.ref.canvas.removeEventListener("mousedown", square)
             }
         }
         return () => {
-            context.canvas.removeEventListener("mousedown", square)
+            context.ref.canvas.removeEventListener("mousedown", square)
         }
-    }, [context.tool, context.canvas, context.index, setContext])
+    }, [context.tool, context.ref.canvas, context.index, setContext])
     return <>{children}</>
 }

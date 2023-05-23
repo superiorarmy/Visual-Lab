@@ -41,6 +41,7 @@ const Point = ({ name, point, setIsClickPoint, ...props }) => {
                 },
             }))
         const mousedown = (e) => {
+            e.preventDefault()
             setIsClickPoint(true)
             setIsResizing(true)
             mousePoint.current = { x: e.clientX, y: e.clientY }

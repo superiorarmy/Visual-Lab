@@ -1,9 +1,15 @@
 import styled from "styled-components"
 import Point from "./points"
-import { useContext, useRef, useState, useEffect, useCallback } from "react"
+import React, {
+    useContext,
+    useRef,
+    useState,
+    useEffect,
+    useCallback,
+} from "react"
 import { AppContext } from "@/context/webscrumber.context"
 
-export default function Selector({ name, graphicRef }) {
+const Selector = React.forwardRef(({ name }, ref) => {
     const points = [
         "top-left",
         "top",
@@ -53,6 +59,7 @@ export default function Selector({ name, graphicRef }) {
         const mousedown = (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
+            console.log("hi")
 
             if (!isClickPoint) {
                 setIsMoving(true)
@@ -77,6 +84,7 @@ export default function Selector({ name, graphicRef }) {
 
                 window.addEventListener("mousemove", mousemove)
                 window.addEventListener("mouseup", mouseup)
+
                 return () => {
                     window.removeEventListener("mousemove", mousemove)
                     window.removeEventListener("mouseup", mouseup)
@@ -84,9 +92,16 @@ export default function Selector({ name, graphicRef }) {
             }
         }
 
-        if (graphic?.isActive && graphicRef && context.tool === "pointer") {
-            graphicRef.addEventListener("mousedown", mousedown)
+        if (
+            graphic?.isActive &&
+            ref &&
+            ref.current &&
+            context.tool === "pointer"
+        ) {
+            ref.current.addEventListener("mousedown", mousedown)
         }
+
+        const graphicRef = ref.current
 
         return () => {
             if (graphicRef) {
@@ -95,15 +110,7 @@ export default function Selector({ name, graphicRef }) {
                 window.removeEventListener("mouseup", mousedown)
             }
         }
-    }, [
-        graphic,
-        graphicRef,
-        setGraphic,
-        isClickPoint,
-        context.tool,
-        name,
-        setContext,
-    ])
+    }, [graphic, ref, setGraphic, isClickPoint, context.tool, name, setContext])
 
     // Shortkey
     useEffect(() => {
@@ -166,7 +173,11 @@ export default function Selector({ name, graphicRef }) {
             ))}
         </Outline>
     )
-}
+})
+
+Selector.displayName = "Selector"
+
+export default Selector
 
 const Outline = styled.div`
     width: 100%;

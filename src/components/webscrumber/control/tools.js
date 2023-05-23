@@ -42,6 +42,7 @@ export default function ToolsControl({ children }) {
             break
         case "media":
             tool = <MediaToolsHandle>{children}</MediaToolsHandle>
+            break
         default:
             tool = null
     }

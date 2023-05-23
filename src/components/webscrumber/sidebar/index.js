@@ -4,6 +4,7 @@ import { MdOutlineTextFields } from "react-icons/md"
 import { BsCircle, BsSquare, BsStars } from "react-icons/bs"
 import { GoFileMedia } from "react-icons/go"
 import Icon from "./icon"
+import MediaMenu from "./mediamenu"
 
 const Sidebar = () => {
     const icons = [
@@ -37,13 +38,16 @@ const Sidebar = () => {
         },
     ]
     return (
-        <SidebarContainer>
-            <IconsContainer>
-                {icons.map((icon) => {
-                    return <Icon icon={icon} key={icon.name} />
-                })}
-            </IconsContainer>
-        </SidebarContainer>
+        <>
+            <SidebarContainer>
+                <IconsContainer>
+                    {icons.map((icon) => {
+                        return <Icon icon={icon} key={icon.name} />
+                    })}
+                </IconsContainer>
+            </SidebarContainer>
+            {/* <MediaMenu /> */}
+        </>
     )
 }
 
