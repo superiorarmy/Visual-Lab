@@ -10,6 +10,7 @@ export default function ToolsControl({ children }) {
     const { context, setContext } = useContext(AppContext)
     const [toolType, setToolType] = useState(null)
 
+    // Set tool
     useEffect(() => {
         if (toolType === null && !context.tool) {
             setContext((prev) => ({
@@ -25,6 +26,28 @@ export default function ToolsControl({ children }) {
             setToolType(context.tool)
         }
     }, [context.tool, setContext, toolType])
+
+    // Tool change and set active to all elements to false
+    useEffect(() => {
+        if (context.layer && context.tool !== "pointer") {
+            const names = Object.keys(context.layer)
+            names.forEach((name) => {
+                if (context.layer[name].isActive) {
+                    setContext((prev) => ({
+                        ...prev,
+                        layer: {
+                            ...prev.layer,
+                            [name]: {
+                                ...prev.layer[name],
+                                isActive: false,
+                            },
+                        },
+                    }))
+                }
+            })
+        }
+        return () => {}
+    }, [context.tool, context.layer, setContext])
 
     let tool = null
     switch (toolType) {

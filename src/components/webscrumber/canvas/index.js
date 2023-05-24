@@ -18,6 +18,7 @@ const Canvas = () => {
         })
     }, [setContext])
     const [elements, setElements] = useState([])
+
     useEffect(() => {
         if (context.layer) {
             const elementNames = Object.keys(context.layer)

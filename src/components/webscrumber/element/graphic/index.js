@@ -8,47 +8,60 @@ export default function Graphic({ name }) {
     const { context, setContext } = useContext(AppContext)
     const graphic = context?.layer?.[name]
     const setGraphic = useCallback(
-        (value) => {
+        (value, graphicName = name) => {
             setContext((prev) => ({
                 ...prev,
                 layer: {
                     ...prev.layer,
-                    [name]: { ...prev.layer[name], ...value },
+                    [graphicName]: { ...prev.layer[graphicName], ...value },
                 },
             }))
         },
         [name, setContext]
     )
 
-    const onClick = (e) => {
-        if (
-            context.tool === "pointer" &&
-            e.target.getAttribute("name") === name
-        ) {
-            setGraphic({ isActive: true })
-        }
-    }
-
+    // Multiple graphic control
     useEffect(() => {
-        if (graphic.isActive) {
-            const click = (e) => {
-                if (ref && ref.current && !ref.current.contains(e.target)) {
-                    setGraphic({ isActive: false })
+        const click = (e) => {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            const clickedName = e.target.getAttribute("name")
+
+            // Allow multiple active graphics when ctrl/cmd/shift is held
+            if (e.shiftKey || e.metaKey || e.ctrlKey) {
+                const isActive = context.layer[clickedName]?.isActive ?? false
+                const isMoving =
+                    context.layer[clickedName]?.status?.isMoving ?? false
+                if (clickedName && !isMoving) {
+                    console.log(clickedName, isMoving)
+                    setGraphic({ isActive: !isActive }, clickedName)
                 }
-            }
+            } else {
+                // Make all graphics inactive
+                Object.keys(context.layer).forEach((graphicName) => {
+                    if (context.layer[graphicName].isActive) {
+                        setGraphic({ isActive: false }, graphicName)
+                    }
+                })
 
-            if (context.tool === "pointer" && context.ref.canvas) {
-                context.ref.canvas.addEventListener("click", click)
-            }
-
-            // Cleanup on unmount or when dependencies change
-            return () => {
-                if (context.ref.canvas) {
-                    context.ref.canvas.removeEventListener("click", click)
+                // If clicked on a graphic, make it active
+                if (clickedName) {
+                    setGraphic({ isActive: true }, clickedName)
                 }
             }
         }
-    }, [graphic, context.tool, context.ref.canvas, ref, setGraphic])
+
+        if (context.tool === "pointer" && context.ref.canvas) {
+            window.addEventListener("click", click)
+        }
+
+        // Cleanup on unmount or when dependencies change
+        return () => {
+            if (context.ref.canvas) {
+                window.removeEventListener("click", click)
+            }
+        }
+    }, [context.layer, context.tool, context.ref, setGraphic])
 
     // Add ref
     useEffect(() => {
@@ -87,7 +100,6 @@ export default function Graphic({ name }) {
                 ref={ref}
                 name={name}
                 style={graphic}
-                onClick={onClick}
                 className={`graphic ${name}`}
             >
                 {condition()}

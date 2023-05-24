@@ -39,8 +39,8 @@ const Selector = React.forwardRef(({ name }, ref) => {
         [name, setContext]
     )
 
-    useEffect(() => {
-        const setIsMoving = (bool) =>
+    const setIsMoving = useCallback(
+        (bool) =>
             setContext((prev) => ({
                 ...prev,
                 layer: {
@@ -54,15 +54,20 @@ const Selector = React.forwardRef(({ name }, ref) => {
                         },
                     },
                 },
-            }))
+            })),
+        [name, setContext]
+    )
 
-        const mousedown = (e) => {
+    const isMoving = useRef(false)
+    const client = useRef({})
+    const mousedown = useCallback(
+        (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
-            console.log("hi")
+            isMoving.current = false
+            client.current = { x: e.clientX, y: e.clientY }
 
             if (!isClickPoint) {
-                setIsMoving(true)
                 initialPosition.current = { x: graphic?.left, y: graphic?.top }
 
                 const mousePoint = {
@@ -73,11 +78,20 @@ const Selector = React.forwardRef(({ name }, ref) => {
                 const mousemove = (e) => {
                     const dx = e.clientX - mousePoint.x
                     const dy = e.clientY - mousePoint.y
+                    isMoving.current = true
                     setGraphic({ left: `${dx}px`, top: `${dy}px` })
                 }
 
-                const mouseup = () => {
-                    setIsMoving(false)
+                const mouseup = (e) => {
+                    if (
+                        !isMoving.current &&
+                        (Math.abs(client.current.x - e.clientX) < 6 ||
+                            Math.abs(client.current.y - e.clientY) < 6) &&
+                        (e.shiftKey || e.metaKey || e.ctrlKey)
+                    ) {
+                        setGraphic({ isActive: false })
+                    }
+                    setIsMoving(isMoving.current)
                     window.removeEventListener("mousemove", mousemove)
                     window.removeEventListener("mouseup", mouseup)
                 }
@@ -90,18 +104,21 @@ const Selector = React.forwardRef(({ name }, ref) => {
                     window.removeEventListener("mouseup", mouseup)
                 }
             }
-        }
+        },
+        // eslint-disable-next-line
+        [graphic, isClickPoint, setGraphic]
+    )
 
+    useEffect(() => {
+        const graphicRef = ref.current
         if (
             graphic?.isActive &&
             ref &&
-            ref.current &&
+            graphicRef &&
             context.tool === "pointer"
         ) {
-            ref.current.addEventListener("mousedown", mousedown)
+            graphicRef.addEventListener("mousedown", mousedown)
         }
-
-        const graphicRef = ref.current
 
         return () => {
             if (graphicRef) {
@@ -110,7 +127,18 @@ const Selector = React.forwardRef(({ name }, ref) => {
                 window.removeEventListener("mouseup", mousedown)
             }
         }
-    }, [graphic, ref, setGraphic, isClickPoint, context.tool, name, setContext])
+    }, [
+        graphic,
+        ref,
+        setGraphic,
+        isClickPoint,
+        context.tool,
+        context.layer,
+        setIsMoving,
+        name,
+        setContext,
+        mousedown,
+    ])
 
     // Shortkey
     useEffect(() => {

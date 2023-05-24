@@ -39,7 +39,16 @@ export default function CircleToolsHandle({ children }) {
                 },
             }))
         }
-    }, [width, height, left, top, isDrawing, setContext, context])
+    }, [
+        width,
+        height,
+        left,
+        top,
+        isDrawing,
+        setContext,
+        context.tool,
+        context.index,
+    ])
 
     useEffect(() => {
         const circle = (e) => {

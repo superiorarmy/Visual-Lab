@@ -4,7 +4,7 @@ import Sidebar from "../components/webscrumber/sidebar"
 import AppContextProvider, { AppContext } from "../context/webscrumber.context"
 import styled from "styled-components"
 import ToolsControl from "../components/webscrumber/control/tools"
-import { useContext, useState } from "react"
+import { useContext, useEffect, useRef } from "react"
 
 export default function WebScrumber() {
     return (
