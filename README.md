@@ -1,38 +1,33 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# WebScrumber: The Future of Web Design
 
-## Getting Started
+WebScrumber is a powerful, user-friendly web design tool crafted to revolutionize the process from conceptual design to functioning code. Boasting a rich set of features and an intuitive interface, WebScrumber is the go-to solution for creating stunning, interactive, and effective websites.
 
-First, run the development server:
+## Alpha Version Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+1. **Freestyle Drag and Drop**: Get creative and design effortlessly with our flexible drag and drop feature. You can freely position and manipulate elements on your webpage, creating unique layouts tailored to your project's requirements.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Advanced Graphic Design**: Unleash your creativity and bring your most intricate designs to life. Our tool supports the creation of any complex shape that CSS can handle, giving you the freedom to design without constraints.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+3. **Export Options**: Share your design with the world! Export your work as an image or as code (HTML, CSS, JS). With a wide range of export options, you can easily integrate your design into your workflow.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+4. **Animation**: Breathe life into your designs with engaging animations. Create dynamic user experiences that will captivate and impress your audience.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+5. **JS Manipulation via Node Editor**: Dive deeper into customization with our Node editor feature, allowing you to manipulate JavaScript in an intuitive, visual manner.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Beta Version Features
 
-## Learn More
+1. **Team and Collaboration**: Collaborate with your team in real-time, enabling you to collectively design, share ideas, and achieve the best results.
 
-To learn more about Next.js, take a look at the following resources:
+2. **Templates and Presets**: Speed up your design process with our collection of templates and presets. Choose from various styles and themes to kickstart your project.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Marketplace**: Make your work pay off! Sell your designs or custom elements in our marketplace, or browse and buy from a vast selection of resources to help enrich your project.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Future Goals
 
-## Deploy on Vercel
+As WebScrumber grows, we aim to provide self-hosted web design, offering a seamless and more intuitive designing experience akin to popular content management systems, but with more freedom and customization.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Join the Revolution
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+WebScrumber is an exciting project that aims to reshape the world of web design. Whether you're a designer, a developer, a collaborator, or someone interested in what we're doing, we welcome you. Be part of the revolution and help shape the future of web design.
+
+**Note**: WebScrumber is currently in active development. We continually update and improve the platform, and your feedback and suggestions are invaluable to us in making WebScrumber the best it can be.
