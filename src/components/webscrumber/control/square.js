@@ -47,11 +47,29 @@ export default function SquareToolsHandle({ children }) {
         context.index,
     ])
 
+    // handle mouse dragging
+    const drag = useRef({})
     useEffect(() => {
         const square = (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
             setIsDrawing(true)
+
+            // handle double click
+            if (e.detail === 2) {
+                const name = e.target.getAttribute("name")
+                if (name) {
+                    setContext((prev) => ({
+                        ...prev,
+                        tool: "pointer",
+                        layer: {
+                            ...prev.layer,
+                            [name]: { ...prev.layer[name], isActive: true },
+                        },
+                    }))
+                }
+            }
+            drag.current = { x: e.clientX, y: e.clientY }
             setContext((prev) => {
                 return {
                     ...prev,
@@ -91,49 +109,54 @@ export default function SquareToolsHandle({ children }) {
                         setHeight(`${length}px`)
                     }
                 } else {
-                    if (dx > 0) {
+                    if (dx > 6) {
                         setWidth(`${dx}px`)
-                    } else {
+                    } else if (dx < -6) {
                         setLeft(`${mousePoint.current.x + dx}px`)
                         setWidth(`${-dx}px`)
                     }
 
-                    if (dy > 0) {
+                    if (dy > 6) {
                         setHeight(`${dy}px`)
-                    } else {
+                    } else if (dy < -6) {
                         setHeight(`${-dy}px`)
                         setTop(`${dy + mousePoint.current.y}px`)
                     }
                 }
+            }
 
-                const mouseup = (e) => {
-                    e.stopPropagation()
+            const mouseup = (e) => {
+                e.stopImmediatePropagation()
+                // have drag?
+                if (
+                    Math.abs(drag.current.x - e.clientX > 6) ||
+                    Math.abs(drag.current.y - e.clientY) > 6
+                ) {
                     setIsDrawing(false)
+                }
+                window.removeEventListener("mousemove", mousemove)
+                window.removeEventListener("mouseup", mouseup)
+                window.removeEventListener("keydown", keydown)
+            }
+
+            const keydown = (e) => {
+                if (e.key === "Escape") {
+                    setContext((prev) => {
+                        return {
+                            ...prev,
+                            index: {
+                                ...prev.index,
+                                graphic: prev.index.graphic - 1,
+                            },
+                        }
+                    })
                     window.removeEventListener("mousemove", mousemove)
                     window.removeEventListener("mouseup", mouseup)
                     window.removeEventListener("keydown", keydown)
                 }
-
-                const keydown = (e) => {
-                    if (e.key === "Escape") {
-                        setContext((prev) => {
-                            return {
-                                ...prev,
-                                index: {
-                                    ...prev.index,
-                                    graphic: prev.index.graphic - 1,
-                                },
-                            }
-                        })
-                        window.removeEventListener("mousemove", mousemove)
-                        window.removeEventListener("mouseup", mouseup)
-                        window.removeEventListener("keydown", keydown)
-                    }
-                }
-
-                window.addEventListener("mouseup", mouseup)
-                window.addEventListener("keydown", keydown)
             }
+
+            window.addEventListener("keydown", keydown)
 
             mousePoint.current = { x: e.clientX, y: e.clientY }
             setLeft(`${mousePoint.current.x}px`)
@@ -141,9 +164,10 @@ export default function SquareToolsHandle({ children }) {
             setWidth(0)
             setHeight(0)
             window.addEventListener("mousemove", mousemove)
+            window.addEventListener("mouseup", mouseup)
         }
 
-        if (context.ref.canvas) {
+        if (context.ref && context.ref.canvas) {
             if (context.tool === "square") {
                 document.body.style.cursor = "crosshair"
                 context.ref.canvas.addEventListener("mousedown", square)
@@ -153,8 +177,11 @@ export default function SquareToolsHandle({ children }) {
             }
         }
         return () => {
-            context.ref.canvas.removeEventListener("mousedown", square)
+            if (context.ref && context.ref.canvas) {
+                context.ref.canvas.removeEventListener("mousedown", square)
+            }
         }
-    }, [context.tool, context.ref.canvas, context.index, setContext])
+    }, [context.tool, context.ref, context.index, setContext])
+
     return <>{children}</>
 }

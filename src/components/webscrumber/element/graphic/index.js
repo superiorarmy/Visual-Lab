@@ -3,7 +3,12 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import Selector from "./selector"
 
-export default function Graphic({ name }) {
+export default function Graphic({
+    name,
+    clickedNames,
+    setClickedNames,
+    style,
+}) {
     const ref = useRef(null)
     const { context, setContext } = useContext(AppContext)
     const graphic = context?.layer?.[name]
@@ -20,7 +25,30 @@ export default function Graphic({ name }) {
         [name, setContext]
     )
 
+    // remove empty width or height
+    useEffect(() => {
+        if (style) {
+            const { width, height } = style
+            if (width === 0 || height === 0) {
+                setContext((prev) => {
+                    const previous = { ...prev }
+                    delete previous.layer[name]
+                    return previous
+                })
+            }
+        }
+    }, [style, name, setContext])
+
     // Multiple graphic control
+    const autoAddRemove = (array, value) => {
+        const index = array.indexOf(value)
+        if (index === -1) {
+            return [...array, value]
+        } else {
+            return array.filter((item, idx) => idx !== index)
+        }
+    }
+
     useEffect(() => {
         const click = (e) => {
             e.preventDefault()
@@ -33,19 +61,21 @@ export default function Graphic({ name }) {
                 const isMoving =
                     context.layer[clickedName]?.status?.isMoving ?? false
                 if (clickedName && !isMoving) {
-                    console.log(clickedName, isMoving)
+                    setClickedNames((prev) => autoAddRemove(prev, clickedName))
                     setGraphic({ isActive: !isActive }, clickedName)
                 }
             } else {
                 // Make all graphics inactive
                 Object.keys(context.layer).forEach((graphicName) => {
-                    if (context.layer[graphicName].isActive) {
+                    setClickedNames([])
+                    if (graphicName !== "tempGroup") {
                         setGraphic({ isActive: false }, graphicName)
                     }
                 })
 
                 // If clicked on a graphic, make it active
                 if (clickedName) {
+                    setClickedNames((prev) => autoAddRemove(prev, clickedName))
                     setGraphic({ isActive: true }, clickedName)
                 }
             }
@@ -61,11 +91,25 @@ export default function Graphic({ name }) {
                 window.removeEventListener("click", click)
             }
         }
-    }, [context.layer, context.tool, context.ref, setGraphic])
+    }, [
+        context.layer,
+        context.tool,
+        context.ref,
+        setGraphic,
+        clickedNames,
+        setClickedNames,
+    ])
 
-    // Add ref
+    // Add ref and attach double click event from different tools
     useEffect(() => {
-        if (graphic && !graphic?.ref && ref && ref.current) {
+        if (
+            graphic &&
+            graphic.width &&
+            graphic.height &&
+            !graphic?.ref &&
+            ref &&
+            ref.current
+        ) {
             setGraphic({ ref: ref.current })
         }
     }, [graphic, name, ref, setGraphic])
@@ -99,7 +143,7 @@ export default function Graphic({ name }) {
             <div
                 ref={ref}
                 name={name}
-                style={graphic}
+                style={style}
                 className={`graphic ${name}`}
             >
                 {condition()}

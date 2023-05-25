@@ -67,26 +67,21 @@ const Selector = React.forwardRef(({ name }, ref) => {
             isMoving.current = false
             client.current = { x: e.clientX, y: e.clientY }
 
-            if (!isClickPoint) {
-                initialPosition.current = { x: graphic?.left, y: graphic?.top }
+            const mousePoint = {
+                x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
+                y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
+            }
 
-                const mousePoint = {
-                    x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
-                    y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
-                }
-
-                const mousemove = (e) => {
-                    const dx = e.clientX - mousePoint.x
-                    const dy = e.clientY - mousePoint.y
-                    isMoving.current = true
-                    setGraphic({ left: `${dx}px`, top: `${dy}px` })
-                }
+            const mousemove = (e) => {
+                const dx = e.clientX - mousePoint.x
+                const dy = e.clientY - mousePoint.y
+                isMoving.current = true
+                setGraphic({ left: `${dx}px`, top: `${dy}px` })
 
                 const mouseup = (e) => {
+                    e.stopPropagation()
                     if (
                         !isMoving.current &&
-                        (Math.abs(client.current.x - e.clientX) < 6 ||
-                            Math.abs(client.current.y - e.clientY) < 6) &&
                         (e.shiftKey || e.metaKey || e.ctrlKey)
                     ) {
                         setGraphic({ isActive: false })
@@ -96,12 +91,15 @@ const Selector = React.forwardRef(({ name }, ref) => {
                     window.removeEventListener("mouseup", mouseup)
                 }
 
-                window.addEventListener("mousemove", mousemove)
                 window.addEventListener("mouseup", mouseup)
+            }
+
+            if (!isClickPoint) {
+                initialPosition.current = { x: graphic?.left, y: graphic?.top }
+                window.addEventListener("mousemove", mousemove)
 
                 return () => {
                     window.removeEventListener("mousemove", mousemove)
-                    window.removeEventListener("mouseup", mouseup)
                 }
             }
         },
@@ -157,7 +155,7 @@ const Selector = React.forwardRef(({ name }, ref) => {
         const onKeyDown = (e) => {
             if (graphic?.isActive) {
                 if (e.key === "Delete" || e.key === "Backspace") {
-                    context.setElementIndex((prev) => prev - 1)
+                    // context.setElementIndex((prev) => prev - 1)
                     setContext((prev) => {
                         const newLayer = { ...prev.layer }
                         delete newLayer[name]

@@ -40,6 +40,7 @@ const Point = ({ name, point, setIsClickPoint, ...props }) => {
                     },
                 },
             }))
+
         const mousedown = (e) => {
             e.preventDefault()
             setIsClickPoint(true)
@@ -50,21 +51,19 @@ const Point = ({ name, point, setIsClickPoint, ...props }) => {
             const mousemove = (e) => {
                 const parseGraphicValue = (value) =>
                     parseInt(graphic?.[value].split("px")[0])
+
                 if (pointName === "top-right") {
-                    setGraphic({
-                        width: `${
-                            parseGraphicValue("width") +
-                            (e.clientX - mousePoint.current.x)
-                        }px`,
-                        top: `${
-                            parseGraphicValue("top") -
-                            (mousePoint.current.y - e.clientY)
-                        }px`,
-                        height: `${
-                            parseGraphicValue("height") -
-                            (e.clientY - mousePoint.current.y)
-                        }px`,
-                    })
+                    const dx = e.clientX - mousePoint.current.x
+                    const dy = e.clientY - mousePoint.current.y
+                    if (e.shiftKey) {
+                        console.log("shift")
+                    } else {
+                        setGraphic({
+                            width: `${parseGraphicValue("width") + dx}px`,
+                            height: `${parseGraphicValue("height") - dy}px`,
+                            top: `${parseGraphicValue("top") + dy}px`,
+                        })
+                    }
                 } else if (pointName === "right") {
                     setGraphic({
                         width: `${
