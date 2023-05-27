@@ -3,7 +3,7 @@ import styled from "styled-components"
 import { AppContext } from "../../../context/webscrumber.context"
 import Graphic from "../element/graphic"
 import deepEqual from "deep-equal"
-import TempGroup from "../element/graphic/group/temp"
+import TempGroup from "../element/group/temp"
 
 const Canvas = () => {
     const ref = useRef()
@@ -28,18 +28,18 @@ const Canvas = () => {
         }
     }, [context.layer])
 
-    const [clickedNames, setClickedNames] = useState([])
+    // handle TempGroup
     const [tempGroup, setTempGroup] = useState({ children: {} })
     useEffect(() => {
         if (context.layer) {
-            if (clickedNames.length >= 2) {
-                clickedNames.forEach((clickedName) => {
-                    if (context.layer[clickedName]) {
+            if (context.activeList.length >= 2) {
+                context.activeList.forEach((active) => {
+                    if (context.layer[active]) {
                         setTempGroup((prev) => ({
                             ...prev,
                             children: {
                                 ...prev.children,
-                                [clickedName]: context.layer[clickedName],
+                                [active]: context.layer[active],
                             },
                         }))
                     }
@@ -66,7 +66,7 @@ const Canvas = () => {
                         }
                     })
                 }
-            } else if (!clickedNames.length && context.layer.tempGroup) {
+            } else if (!context.activeList.length && context.layer.tempGroup) {
                 setTempGroup({})
                 const { tempGroup, ...newState } = context.layer
                 if (context.layer !== newState) {
@@ -92,14 +92,14 @@ const Canvas = () => {
                 }
             }
         }
-    }, [context.layer, clickedNames, tempGroup, setContext])
+    }, [context.layer, context.activeList, tempGroup, setContext])
 
+    const [theChildren, setTheChildren] = useState({})
     const RenderElement = ({ name, ...props }) => {
         if (context.layer && context.layer[name]) {
             if (context.layer[name].type === "graphic") {
                 return (
                     <Graphic
-                        setClickedNames={setClickedNames}
                         name={name}
                         style={context.layer[name]}
                         {...props}
@@ -108,10 +108,10 @@ const Canvas = () => {
             } else if (context.layer.tempGroup?.children) {
                 return (
                     <TempGroup
+                        theChildren={theChildren}
+                        setTheChildren={setTheChildren}
                         tempGroup={tempGroup}
                         setTempGroup={setTempGroup}
-                        clickedNames={clickedNames}
-                        setClickedNames={setClickedNames}
                         name={name}
                         {...props}
                     />

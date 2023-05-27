@@ -62,44 +62,49 @@ const Selector = React.forwardRef(({ name }, ref) => {
     const client = useRef({})
     const mousedown = useCallback(
         (e) => {
-            e.preventDefault()
-            e.stopImmediatePropagation()
-            isMoving.current = false
-            client.current = { x: e.clientX, y: e.clientY }
+            if (context.activeList.length < 2) {
+                e.preventDefault()
+                e.stopImmediatePropagation()
+                isMoving.current = false
+                client.current = { x: e.clientX, y: e.clientY }
 
-            const mousePoint = {
-                x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
-                y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
-            }
-
-            const mousemove = (e) => {
-                const dx = e.clientX - mousePoint.x
-                const dy = e.clientY - mousePoint.y
-                isMoving.current = true
-                setGraphic({ left: `${dx}px`, top: `${dy}px` })
-
-                const mouseup = (e) => {
-                    e.stopPropagation()
-                    if (
-                        !isMoving.current &&
-                        (e.shiftKey || e.metaKey || e.ctrlKey)
-                    ) {
-                        setGraphic({ isActive: false })
-                    }
-                    setIsMoving(isMoving.current)
-                    window.removeEventListener("mousemove", mousemove)
-                    window.removeEventListener("mouseup", mouseup)
+                const mousePoint = {
+                    x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
+                    y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
                 }
 
-                window.addEventListener("mouseup", mouseup)
-            }
+                const mousemove = (e) => {
+                    const dx = e.clientX - mousePoint.x
+                    const dy = e.clientY - mousePoint.y
+                    isMoving.current = true
+                    setGraphic({ left: `${dx}px`, top: `${dy}px` })
 
-            if (!isClickPoint) {
-                initialPosition.current = { x: graphic?.left, y: graphic?.top }
-                window.addEventListener("mousemove", mousemove)
+                    const mouseup = (e) => {
+                        e.stopPropagation()
+                        if (
+                            !isMoving.current &&
+                            (e.shiftKey || e.metaKey || e.ctrlKey)
+                        ) {
+                            setGraphic({ isActive: false })
+                        }
+                        setIsMoving(isMoving.current)
+                        window.removeEventListener("mousemove", mousemove)
+                        window.removeEventListener("mouseup", mouseup)
+                    }
 
-                return () => {
-                    window.removeEventListener("mousemove", mousemove)
+                    window.addEventListener("mouseup", mouseup)
+                }
+
+                if (!isClickPoint) {
+                    initialPosition.current = {
+                        x: graphic?.left,
+                        y: graphic?.top,
+                    }
+                    window.addEventListener("mousemove", mousemove)
+
+                    return () => {
+                        window.removeEventListener("mousemove", mousemove)
+                    }
                 }
             }
         },
@@ -113,7 +118,8 @@ const Selector = React.forwardRef(({ name }, ref) => {
             graphic?.isActive &&
             ref &&
             graphicRef &&
-            context.tool === "pointer"
+            context.tool === "pointer" &&
+            context.activeList.length > 1
         ) {
             graphicRef.addEventListener("mousedown", mousedown)
         }
@@ -128,13 +134,9 @@ const Selector = React.forwardRef(({ name }, ref) => {
     }, [
         graphic,
         ref,
-        setGraphic,
-        isClickPoint,
         context.tool,
         context.layer,
-        setIsMoving,
-        name,
-        setContext,
+        context.activeList,
         mousedown,
     ])
 
@@ -174,7 +176,7 @@ const Selector = React.forwardRef(({ name }, ref) => {
             }
         }
 
-        if (context.layer[name].status.isMoving) {
+        if (context?.layer?.[name]?.status?.isMoving) {
             window.addEventListener("keydown", onMovingKeyDown)
         } else {
             window.addEventListener("keydown", onKeyDown)
@@ -188,7 +190,7 @@ const Selector = React.forwardRef(({ name }, ref) => {
     }, [graphic, context, setGraphic, name, setContext])
 
     return (
-        <Outline>
+        <Outline name={name}>
             {points.map((point) => (
                 <Point
                     key={`graphic-${point}`}

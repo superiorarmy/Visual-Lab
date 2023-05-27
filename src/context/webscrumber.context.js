@@ -4,7 +4,7 @@ import { useEffect, useState, createContext } from "react"
 export const AppContext = createContext(null)
 
 export default function AppContextProvider({ children }) {
-    const [context, setContext] = useState({})
+    const [context, setContext] = useState({ activeList: [] })
 
     useEffect(() => {
         console.log(context)

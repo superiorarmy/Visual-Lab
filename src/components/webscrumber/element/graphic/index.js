@@ -3,12 +3,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import Selector from "./selector"
 
-export default function Graphic({
-    name,
-    clickedNames,
-    setClickedNames,
-    style,
-}) {
+export default function Graphic({ name, style }) {
     const ref = useRef(null)
     const { context, setContext } = useContext(AppContext)
     const graphic = context?.layer?.[name]
@@ -61,21 +56,31 @@ export default function Graphic({
                 const isMoving =
                     context.layer[clickedName]?.status?.isMoving ?? false
                 if (clickedName && !isMoving) {
-                    setClickedNames((prev) => autoAddRemove(prev, clickedName))
+                    setContext((prev) => ({
+                        ...prev,
+                        activeList: autoAddRemove(prev.activeList, clickedName),
+                    }))
                     setGraphic({ isActive: !isActive }, clickedName)
                 }
-            } else {
+            } else if (!context.activeList.includes(clickedName)) {
                 // Make all graphics inactive
                 Object.keys(context.layer).forEach((graphicName) => {
-                    setClickedNames([])
+                    setContext((prev) => ({
+                        ...prev,
+                        activeList: [],
+                    }))
                     if (graphicName !== "tempGroup") {
                         setGraphic({ isActive: false }, graphicName)
                     }
                 })
 
+                console.log(context.activeList, clickedName)
                 // If clicked on a graphic, make it active
                 if (clickedName) {
-                    setClickedNames((prev) => autoAddRemove(prev, clickedName))
+                    setContext((prev) => ({
+                        ...prev,
+                        activeList: [clickedName],
+                    }))
                     setGraphic({ isActive: true }, clickedName)
                 }
             }
@@ -93,11 +98,11 @@ export default function Graphic({
         }
     }, [
         context.layer,
+        context.activeList,
         context.tool,
         context.ref,
         setGraphic,
-        clickedNames,
-        setClickedNames,
+        setContext,
     ])
 
     // Add ref and attach double click event from different tools
