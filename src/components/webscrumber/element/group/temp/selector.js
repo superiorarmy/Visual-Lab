@@ -21,7 +21,6 @@ export default function TempGroupSelector({
         const mousedown = (e) => {
             e.preventDefault()
             e.stopImmediatePropagation()
-            console.log("mousedown")
             const name = e.target.getAttribute("name")
             if (
                 context.layer.tempGroup &&
@@ -36,14 +35,12 @@ export default function TempGroupSelector({
                     const dx = e.clientX - mousePoint.current.x
                     const dy = e.clientY - mousePoint.current.y
 
-                    console.log("mousemove")
                     setLeft(dx)
                     setTop(dy)
                 }
 
                 const mouseup = (e) => {
                     e.stopImmediatePropagation()
-                    console.log("mouseup")
                     window.removeEventListener("mousemove", mousemove)
                     window.removeEventListener("mouseup", mouseup)
                 }
