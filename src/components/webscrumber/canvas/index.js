@@ -31,71 +31,118 @@ const Canvas = () => {
     // handle TempGroup
     const [tempGroup, setTempGroup] = useState({ children: {} })
     useEffect(() => {
-        if (context.layer) {
-            if (context.activeList.length >= 2) {
-                context.activeList.forEach((active) => {
-                    if (context.layer[active]) {
-                        setTempGroup((prev) => ({
-                            ...prev,
-                            children: {
-                                ...prev.children,
-                                [active]: context.layer[active],
-                            },
-                        }))
+        if (context.activeList.length >= 2) {
+            context.activeList.forEach((active) => {
+                if (context.layer[active]) {
+                    setTempGroup((prev) => ({
+                        ...prev,
+                        children: {
+                            ...prev.children,
+                            [active]: context.layer[active],
+                        },
+                    }))
+                }
+            })
+        } else if (context.layer?.tempGroup && !context.activeList.length) {
+            setContext((prev) => {
+                const clonedLayers = { ...prev.layer }
+                const { tempGroup: lastTemp, ...modifiedLayers } = clonedLayers
+                Object.entries(lastTemp.children).forEach(([keys, values]) => {
+                    modifiedLayers[keys] = values
+                    modifiedLayers[keys].isActive = false
+                })
+                console.log(modifiedLayers)
+
+                return { ...prev, layer: modifiedLayers }
+            })
+        }
+    }, [context.activeList, context.layer, setContext])
+    useEffect(() => {
+        if (
+            Object.keys(tempGroup.children).length ===
+                context.activeList.length &&
+            Object.keys(tempGroup.children).length &&
+            context.activeList.length
+        ) {
+            setContext((prev) => {
+                const excludedLayers = { ...prev.layer }
+                Object.keys(tempGroup.children).forEach((active) => {
+                    if (excludedLayers[active]) {
+                        delete excludedLayers[active]
                     }
                 })
 
-                if (
-                    !context.layer.tempGroup ||
-                    !deepEqual(context.layer.tempGroup, tempGroup)
-                ) {
-                    setContext((prev) => {
-                        // create a copy of the layer object
-                        let newLayer = { ...prev.layer }
-                        // remove keys present in tempGroup from layer
-                        Object.keys(tempGroup.children || {}).forEach((key) => {
-                            if (newLayer[key]) {
-                                delete newLayer[key]
-                            }
-                        })
-                        // update the tempGroup key in layer
-                        newLayer.tempGroup = tempGroup
-                        return {
-                            ...prev,
-                            layer: newLayer,
-                        }
-                    })
-                }
-            } else if (!context.activeList.length && context.layer.tempGroup) {
-                setTempGroup({})
-                const { tempGroup, ...newState } = context.layer
-                if (context.layer !== newState) {
-                    setContext((prev) => {
-                        // create a copy of the layer object
-                        let newLayer = { ...prev.layer }
-                        // remove keys present in tempGroup from layer
-                        Object.keys(prev.layer.tempGroup.children).forEach(
-                            (key) => {
-                                if (key !== "isActive") {
-                                    const newObj = {
-                                        ...newLayer.tempGroup.children[key],
-                                        isActive: false,
-                                    }
-                                    newLayer[key] = newObj
-                                }
-                            }
-                        )
-                        // remove the tempGroup key from layer
-                        delete newLayer.tempGroup
-                        return { ...prev, layer: newLayer }
-                    })
-                }
-            }
+                return { ...prev, layer: { ...excludedLayers, tempGroup } }
+            })
         }
-    }, [context.layer, context.activeList, tempGroup, setContext])
+    }, [tempGroup, context.activeList, setContext])
 
-    const [theChildren, setTheChildren] = useState({})
+    // useEffect(() => {
+    //     if (context.layer) {
+    //         if (context.activeList.length >= 2) {
+    //             context.activeList.forEach((active) => {
+    //                 if (context.layer[active]) {
+    //                     setTempGroup((prev) => ({
+    //                         ...prev,
+    //                         children: {
+    //                             ...prev.children,
+    //                             [active]: context.layer[active],
+    //                         },
+    //                     }))
+    //                 }
+    //             })
+
+    //             if (
+    //                 !context.layer.tempGroup ||
+    //                 !deepEqual(context.layer.tempGroup, tempGroup)
+    //             ) {
+    //                 setContext((prev) => {
+    //                     // create a copy of the layer object
+    //                     let newLayer = { ...prev.layer }
+    //                     // remove keys present in tempGroup from layer
+    //                     Object.keys(tempGroup.children || {}).forEach((key) => {
+    //                         if (newLayer[key]) {
+    //                             delete newLayer[key]
+    //                         }
+    //                     })
+    //                     // update the tempGroup key in layer
+    //                     newLayer.tempGroup = tempGroup
+    //                     return {
+    //                         ...prev,
+    //                         layer: newLayer,
+    //                     }
+    //                 })
+    //             }
+    //         } else if (!context.activeList.length && context.layer.tempGroup) {
+    //             setTempGroup({})
+    //             const { tempGroup, ...newState } = context.layer
+    //             if (context.layer !== newState) {
+    //                 setContext((prev) => {
+    //                     // create a copy of the layer object
+    //                     let newLayer = { ...prev.layer }
+    //                     // remove keys present in tempGroup from layer
+    //                     Object.keys(prev.layer.tempGroup.children).forEach(
+    //                         (key) => {
+    //                             if (key !== "isActive") {
+    //                                 const newObj = {
+    //                                     ...newLayer.tempGroup.children[key],
+    //                                     isActive: false,
+    //                                 }
+    //                                 newLayer[key] = newObj
+    //                             }
+    //                         }
+    //                     )
+    //                     // remove the tempGroup key from layer
+    //                     delete newLayer.tempGroup
+    //                     return { ...prev, layer: newLayer }
+    //                 })
+    //             }
+    //         }
+    //     }
+    // }, [context.layer, context.activeList, tempGroup, setContext])
+
     const RenderElement = ({ name, ...props }) => {
+        const [theChildren, setTheChildren] = useState()
         if (context.layer && context.layer[name]) {
             if (context.layer[name].type === "graphic") {
                 return (

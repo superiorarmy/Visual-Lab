@@ -62,22 +62,30 @@ const Selector = React.forwardRef(({ name }, ref) => {
     const client = useRef({})
     const mousedown = useCallback(
         (e) => {
-            if (context.activeList.length < 2) {
+            if (context.activeList.length < 2 && graphic) {
                 e.preventDefault()
                 e.stopImmediatePropagation()
                 isMoving.current = false
                 client.current = { x: e.clientX, y: e.clientY }
 
+                const currentValue = (value) =>
+                    parseInt(graphic[value].split("px")[0])
                 const mousePoint = {
-                    x: e.clientX - parseInt(graphic?.left?.split("px")[0]),
-                    y: e.clientY - parseInt(graphic?.top?.split("px")[0]),
+                    x: e.clientX - currentValue("left"),
+                    y: e.clientY - currentValue("top"),
                 }
 
                 const mousemove = (e) => {
                     const dx = e.clientX - mousePoint.x
                     const dy = e.clientY - mousePoint.y
-                    isMoving.current = true
-                    setGraphic({ left: `${dx}px`, top: `${dy}px` })
+
+                    if (
+                        Math.abs(mousePoint.x - dx) > 6 ||
+                        Math.abs(mousePoint.y - dy > 6)
+                    ) {
+                        isMoving.current = true
+                        setGraphic({ left: `${dx}px`, top: `${dy}px` })
+                    }
 
                     const mouseup = (e) => {
                         e.stopPropagation()
@@ -87,7 +95,7 @@ const Selector = React.forwardRef(({ name }, ref) => {
                         ) {
                             setGraphic({ isActive: false })
                         }
-                        setIsMoving(isMoving.current)
+                        isMoving.current = false
                         window.removeEventListener("mousemove", mousemove)
                         window.removeEventListener("mouseup", mouseup)
                     }
@@ -119,7 +127,7 @@ const Selector = React.forwardRef(({ name }, ref) => {
             ref &&
             graphicRef &&
             context.tool === "pointer" &&
-            context.activeList.length > 1
+            context.activeList.length >= 1
         ) {
             graphicRef.addEventListener("mousedown", mousedown)
         }

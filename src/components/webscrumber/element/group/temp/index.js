@@ -1,5 +1,5 @@
 import Graphic from "../../graphic"
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useMemo, useState } from "react"
 import { AppContext } from "@/context/webscrumber.context"
 import TempGroupSelector from "./selector"
 
@@ -120,7 +120,12 @@ export default function TempGroup({
     ])
 
     const elements = context.activeList.map((name) => (
-        <Graphic key={name} name={name} style={theChildren[name]} {...props} />
+        <Graphic
+            key={name}
+            name={name}
+            style={theChildren?.[name]}
+            {...props}
+        />
     ))
     return (
         <TempGroupSelector

@@ -74,7 +74,6 @@ export default function Graphic({ name, style }) {
                     }
                 })
 
-                console.log(context.activeList, clickedName)
                 // If clicked on a graphic, make it active
                 if (clickedName) {
                     setContext((prev) => ({
