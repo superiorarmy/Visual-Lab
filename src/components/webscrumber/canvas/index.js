@@ -1,9 +1,10 @@
-import { useContext, useEffect, useRef, useState } from "react"
+import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { AppContext } from "../../../context/webscrumber.context"
 import Graphic from "../element/graphic"
 import deepEqual from "deep-equal"
 import TempGroup from "../element/group/temp"
+import useTempGroup from "../element/group/temp/handle"
 
 const Canvas = () => {
     const ref = useRef()
@@ -29,120 +30,10 @@ const Canvas = () => {
     }, [context.layer])
 
     // handle TempGroup
-    const [tempGroup, setTempGroup] = useState({ children: {} })
-    useEffect(() => {
-        if (context.activeList.length >= 2) {
-            context.activeList.forEach((active) => {
-                if (context.layer[active]) {
-                    setTempGroup((prev) => ({
-                        ...prev,
-                        children: {
-                            ...prev.children,
-                            [active]: context.layer[active],
-                        },
-                    }))
-                }
-            })
-        } else if (context.layer?.tempGroup && !context.activeList.length) {
-            setContext((prev) => {
-                const clonedLayers = { ...prev.layer }
-                const { tempGroup: lastTemp, ...modifiedLayers } = clonedLayers
-                Object.entries(lastTemp.children).forEach(([keys, values]) => {
-                    modifiedLayers[keys] = values
-                    modifiedLayers[keys].isActive = false
-                })
-                console.log(modifiedLayers)
+    const [tempGroup, setTempGroup] = useTempGroup()
 
-                return { ...prev, layer: modifiedLayers }
-            })
-        }
-    }, [context.activeList, context.layer, setContext])
-    useEffect(() => {
-        if (
-            Object.keys(tempGroup.children).length ===
-                context.activeList.length &&
-            Object.keys(tempGroup.children).length &&
-            context.activeList.length
-        ) {
-            setContext((prev) => {
-                const excludedLayers = { ...prev.layer }
-                Object.keys(tempGroup.children).forEach((active) => {
-                    if (excludedLayers[active]) {
-                        delete excludedLayers[active]
-                    }
-                })
-
-                return { ...prev, layer: { ...excludedLayers, tempGroup } }
-            })
-        }
-    }, [tempGroup, context.activeList, setContext])
-
-    // useEffect(() => {
-    //     if (context.layer) {
-    //         if (context.activeList.length >= 2) {
-    //             context.activeList.forEach((active) => {
-    //                 if (context.layer[active]) {
-    //                     setTempGroup((prev) => ({
-    //                         ...prev,
-    //                         children: {
-    //                             ...prev.children,
-    //                             [active]: context.layer[active],
-    //                         },
-    //                     }))
-    //                 }
-    //             })
-
-    //             if (
-    //                 !context.layer.tempGroup ||
-    //                 !deepEqual(context.layer.tempGroup, tempGroup)
-    //             ) {
-    //                 setContext((prev) => {
-    //                     // create a copy of the layer object
-    //                     let newLayer = { ...prev.layer }
-    //                     // remove keys present in tempGroup from layer
-    //                     Object.keys(tempGroup.children || {}).forEach((key) => {
-    //                         if (newLayer[key]) {
-    //                             delete newLayer[key]
-    //                         }
-    //                     })
-    //                     // update the tempGroup key in layer
-    //                     newLayer.tempGroup = tempGroup
-    //                     return {
-    //                         ...prev,
-    //                         layer: newLayer,
-    //                     }
-    //                 })
-    //             }
-    //         } else if (!context.activeList.length && context.layer.tempGroup) {
-    //             setTempGroup({})
-    //             const { tempGroup, ...newState } = context.layer
-    //             if (context.layer !== newState) {
-    //                 setContext((prev) => {
-    //                     // create a copy of the layer object
-    //                     let newLayer = { ...prev.layer }
-    //                     // remove keys present in tempGroup from layer
-    //                     Object.keys(prev.layer.tempGroup.children).forEach(
-    //                         (key) => {
-    //                             if (key !== "isActive") {
-    //                                 const newObj = {
-    //                                     ...newLayer.tempGroup.children[key],
-    //                                     isActive: false,
-    //                                 }
-    //                                 newLayer[key] = newObj
-    //                             }
-    //                         }
-    //                     )
-    //                     // remove the tempGroup key from layer
-    //                     delete newLayer.tempGroup
-    //                     return { ...prev, layer: newLayer }
-    //                 })
-    //             }
-    //         }
-    //     }
-    // }, [context.layer, context.activeList, tempGroup, setContext])
-
+    const [childrenStyle, setChildrenStyle] = useState({})
     const RenderElement = ({ name, ...props }) => {
-        const [theChildren, setTheChildren] = useState()
         if (context.layer && context.layer[name]) {
             if (context.layer[name].type === "graphic") {
                 return (
@@ -155,11 +46,10 @@ const Canvas = () => {
             } else if (context.layer.tempGroup?.children) {
                 return (
                     <TempGroup
-                        theChildren={theChildren}
-                        setTheChildren={setTheChildren}
+                        childrenStyle={childrenStyle}
+                        setChildrenStyle={setChildrenStyle}
                         tempGroup={tempGroup}
                         setTempGroup={setTempGroup}
-                        name={name}
                         {...props}
                     />
                 )
