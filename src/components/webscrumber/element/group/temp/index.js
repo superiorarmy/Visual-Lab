@@ -2,7 +2,6 @@ import Graphic from "../../graphic"
 import { useContext, useEffect, useMemo, useState } from "react"
 import { AppContext } from "@/context/webscrumber.context"
 import TempGroupSelector from "./selector"
-import deepEqual from "deep-equal"
 
 export default function TempGroup({
     tempGroup,

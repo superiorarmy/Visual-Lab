@@ -2,7 +2,6 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react"
 import styled from "styled-components"
 import { AppContext } from "../../../context/webscrumber.context"
 import Graphic from "../element/graphic"
-import deepEqual from "deep-equal"
 import TempGroup from "../element/group/temp"
 import useTempGroup from "../element/group/temp/handle"
 

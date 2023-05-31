@@ -1,5 +1,4 @@
-import { AppContext } from "@/context/webscrumber.context"
-import { useContext, useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import styled from "styled-components"
 
 export default function TempGroupSelector({
