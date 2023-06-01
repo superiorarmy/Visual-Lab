@@ -1,6 +1,96 @@
 import { AppContext } from "@/context/webscrumber.context"
-import { useContext, useEffect, useState } from "react"
+import deepEqual from "deep-equal"
+import { useContext, useEffect, useRef, useState } from "react"
+import Selection from "../element/selection"
 
 export default function PointerToolsHandle({ children }) {
-    return <>{children}</>
+    const { context, setContext } = useContext(AppContext)
+    const [selection, setSelection] = useState({})
+    const select = useRef({})
+    // drag selection
+    useEffect(() => {
+        const mousedown = (e) => {
+            e.preventDefault()
+            e.stopImmediatePropagation()
+            select.current = {
+                width: 0,
+                height: 0,
+                left: e.clientX,
+                top: e.clientY,
+            }
+            setSelection(select.current)
+
+            const mousemove = (e) => {
+                const dx = e.clientX - select.current.left
+                const dy = e.clientY - select.current.top
+
+                if (dx > 6) {
+                    setSelection((prev) => ({ ...prev, width: dx }))
+                } else if (dx < -6) {
+                    setSelection((prev) => ({
+                        ...prev,
+                        left: select.current.left + dx,
+                        width: -dx,
+                    }))
+                }
+
+                if (dy > 6) {
+                    setSelection((prev) => ({ ...prev, height: dy }))
+                } else if (dy < -6) {
+                    setSelection((prev) => ({
+                        ...prev,
+                        top: select.current.top + dy,
+                        height: -dy,
+                    }))
+                }
+            }
+
+            const mouseup = () => {
+                setSelection({})
+                window.removeEventListener("mousemove", mousemove)
+                window.removeEventListener("mouseup", mouseup)
+            }
+
+            window.addEventListener("mousemove", mousemove)
+            window.addEventListener("mouseup", mouseup)
+        }
+
+        if (context.ref && context.ref.canvas) {
+            context.ref.canvas.addEventListener("mousedown", mousedown)
+        }
+        return () => {
+            if (context.ref && context.ref.canvas) {
+                context.ref.canvas.removeEventListener("mousedown", mousedown)
+            }
+        }
+    }, [context.ref])
+
+    useEffect(() => {
+        setContext((prev) => {
+            if (!Object.keys(selection).length) {
+                const { selection, ...previous } = { ...prev }
+                return previous
+            } else {
+                return { ...prev, selection }
+            }
+        })
+    }, [selection, setContext])
+
+    const selecting = useRef(false)
+    const [isSelection, setIsSelection] = useState(false)
+    useEffect(() => {
+        if (context && context.selection && !selecting.current) {
+            selecting.current = true
+            setIsSelection(true)
+        } else if (context && !context.selection && selecting.current) {
+            selecting.current = false
+            setIsSelection(false)
+        }
+    }, [context])
+    return (
+        <>
+            {isSelection && <Selection />}
+            {children}
+        </>
+    )
 }

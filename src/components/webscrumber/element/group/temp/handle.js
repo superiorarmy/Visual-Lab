@@ -21,8 +21,8 @@ export default function useTempGroup() {
         } else if (context.layer?.tempGroup && !context.activeList.length) {
             // release
             setContext((prev) => {
-                let newLayers = {}
-                const { tempGroup: lastTemp } = prev.layer
+                const { tempGroup: lastTemp, ...seperatedLayers } = prev.layer
+                let newLayers = { ...seperatedLayers }
                 Object.entries(lastTemp.children).forEach(([keys, values]) => {
                     newLayers = {
                         ...newLayers,

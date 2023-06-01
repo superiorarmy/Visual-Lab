@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react"
 import styled from "styled-components"
+import Point from "./points"
 
 export default function TempGroupSelector({
     tempGroup,
     setTempGroup,
     children,
 }) {
+    const points = ["top-left", "top-right", "bottom-right", "bottom-left"]
     const ref = useRef(null)
     const mousePoint = useRef({})
 
@@ -51,6 +53,9 @@ export default function TempGroupSelector({
             left={tempGroup.left}
             top={tempGroup.top}
         >
+            {points.map((point) => (
+                <Point key={`selector-point-${point}`} point={point} />
+            ))}
             {children}
         </TempSelector>
     )

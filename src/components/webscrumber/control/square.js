@@ -82,6 +82,7 @@ export default function SquareToolsHandle({ children }) {
 
             const mousemove = (e) => {
                 e.stopImmediatePropagation()
+                console.log(e.clientX, mousePoint.current.x)
                 const dx = e.clientX - mousePoint.current.x
                 const dy = e.clientY - mousePoint.current.y
 

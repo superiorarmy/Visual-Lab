@@ -4,6 +4,7 @@ import { AppContext } from "../../../context/webscrumber.context"
 import Graphic from "../element/graphic"
 import TempGroup from "../element/group/temp"
 import useTempGroup from "../element/group/temp/handle"
+import Selection from "../element/selection"
 
 const Canvas = () => {
     const ref = useRef()
