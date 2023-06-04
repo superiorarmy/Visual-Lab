@@ -44,65 +44,65 @@ export default function Graphic({ name, style }) {
         }
     }
 
-    useEffect(() => {
-        const click = (e) => {
-            e.preventDefault()
-            e.stopImmediatePropagation()
-            const clickedName = e.target.getAttribute("name")
+    // useEffect(() => {
+    //     const click = (e) => {
+    //         e.preventDefault()
+    //         e.stopImmediatePropagation()
+    //         const clickedName = e.target.getAttribute("name")
 
-            // Allow multiple active graphics when ctrl/cmd/shift is held
-            if (e.shiftKey || e.metaKey || e.ctrlKey) {
-                const isActive = context.layer[clickedName]?.isActive ?? false
-                const isMoving =
-                    context.layer[clickedName]?.status?.isMoving ?? false
-                if (clickedName && !isMoving) {
-                    setContext((prev) => ({
-                        ...prev,
-                        activeList: autoAddRemove(prev.activeList, clickedName),
-                    }))
-                    setGraphic({ isActive: !isActive }, clickedName)
-                }
-            } else if (!context.activeList.includes(clickedName)) {
-                // Make all graphics inactive
-                Object.keys(context.layer).forEach((graphicName) => {
-                    setContext((prev) => ({
-                        ...prev,
-                        activeList: [],
-                    }))
-                    if (graphicName !== "tempGroup") {
-                        setGraphic({ isActive: false }, graphicName)
-                    }
-                })
+    //         // Allow multiple active graphics when ctrl/cmd/shift is held
+    //         if (e.shiftKey || e.metaKey || e.ctrlKey) {
+    //             const isActive = context.layer[clickedName]?.isActive ?? false
+    //             const isMoving =
+    //                 context.layer[clickedName]?.status?.isMoving ?? false
+    //             if (clickedName && !isMoving) {
+    //                 setContext((prev) => ({
+    //                     ...prev,
+    //                     activeList: autoAddRemove(prev.activeList, clickedName),
+    //                 }))
+    //                 setGraphic({ isActive: !isActive }, clickedName)
+    //             }
+    //         } else if (!context.activeList.includes(clickedName)) {
+    //             // Make all graphics inactive
+    //             Object.keys(context.layer).forEach((graphicName) => {
+    //                 setContext((prev) => ({
+    //                     ...prev,
+    //                     activeList: [],
+    //                 }))
+    //                 if (graphicName !== "tempGroup") {
+    //                     setGraphic({ isActive: false }, graphicName)
+    //                 }
+    //             })
 
-                // If clicked on a graphic, make it active
-                if (clickedName) {
-                    setContext((prev) => ({
-                        ...prev,
-                        activeList: [clickedName],
-                    }))
-                    setGraphic({ isActive: true }, clickedName)
-                }
-            }
-        }
+    //             // If clicked on a graphic, make it active
+    //             if (clickedName) {
+    //                 setContext((prev) => ({
+    //                     ...prev,
+    //                     activeList: [clickedName],
+    //                 }))
+    //                 setGraphic({ isActive: true }, clickedName)
+    //             }
+    //         }
+    //     }
 
-        if (context.tool === "pointer" && context.ref.canvas) {
-            window.addEventListener("click", click)
-        }
+    //     if (context.tool === "pointer" && context.ref.canvas) {
+    //         window.addEventListener("click", click)
+    //     }
 
-        // Cleanup on unmount or when dependencies change
-        return () => {
-            if (context.ref.canvas) {
-                window.removeEventListener("click", click)
-            }
-        }
-    }, [
-        context.layer,
-        context.activeList,
-        context.tool,
-        context.ref,
-        setGraphic,
-        setContext,
-    ])
+    //     // Cleanup on unmount or when dependencies change
+    //     return () => {
+    //         if (context.ref.canvas) {
+    //             window.removeEventListener("click", click)
+    //         }
+    //     }
+    // }, [
+    //     context.layer,
+    //     context.activeList,
+    //     context.tool,
+    //     context.ref,
+    //     setGraphic,
+    //     setContext,
+    // ])
 
     // Add ref and attach double click event from different tools
     useEffect(() => {
@@ -151,7 +151,7 @@ export default function Graphic({ name, style }) {
                 className={`graphic ${name}`}
             >
                 {condition()}
-                {context?.layer?.[name]?.isActive && (
+                {context.activeList.includes(name) && (
                     <Selector name={name} ref={ref} />
                 )}
             </div>

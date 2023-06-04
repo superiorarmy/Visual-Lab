@@ -6,6 +6,7 @@ import Selection from "../element/selection"
 export default function PointerToolsHandle({ children }) {
     const { context, setContext } = useContext(AppContext)
     const [selection, setSelection] = useState({})
+    const [activeList, setActiveList] = useState([])
     const select = useRef({})
     // drag selection
     useEffect(() => {
@@ -19,6 +20,15 @@ export default function PointerToolsHandle({ children }) {
                 top: e.clientY,
             }
             setSelection(select.current)
+            setActiveList([])
+            setContext((prev) => {
+                const name = e.target.getAttribute("name")
+                if (name) {
+                    return { ...prev, activeList: [name] }
+                } else {
+                    return { ...prev, activeList: [] }
+                }
+            })
 
             const mousemove = (e) => {
                 const dx = e.clientX - select.current.left
@@ -63,7 +73,7 @@ export default function PointerToolsHandle({ children }) {
                 context.ref.canvas.removeEventListener("mousedown", mousedown)
             }
         }
-    }, [context.ref])
+    }, [context.ref, setContext])
 
     useEffect(() => {
         setContext((prev) => {
@@ -87,9 +97,15 @@ export default function PointerToolsHandle({ children }) {
             setIsSelection(false)
         }
     }, [context])
+
     return (
         <>
-            {isSelection && <Selection />}
+            {isSelection && (
+                <Selection
+                    activeList={activeList}
+                    setActiveList={setActiveList}
+                />
+            )}
             {children}
         </>
     )
